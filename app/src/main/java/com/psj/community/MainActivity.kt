@@ -1,7 +1,7 @@
 
 package com.psj.community
 import androidx.compose.material3.ExperimentalMaterial3Api
-
+import androidx.compose.material3.TextFieldDefaults
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -349,33 +349,50 @@ fun LoginScreen(
                     Spacer(modifier = Modifier.height(20.dp))
 
                     OutlinedTextField(
-                        value = memberId,
-                        onValueChange = {
-                            memberId = it
-                        },
-                        modifier = Modifier.fillMaxWidth(),
-                        label = { Text("ID PSJ") },
-                        placeholder = {
-                            Text("Contoh: PSJ-006")
-                        },
-                        singleLine = true,
-                        shape = RoundedCornerShape(12.dp)
-                    )
+    value = memberId,
+    onValueChange = {
+        memberId = it
+    },
+    modifier = Modifier.fillMaxWidth(),
+    label = { Text("ID PSJ") },
+    placeholder = {
+        Text("Contoh: PSJ-006")
+    },
+    singleLine = true,
+    shape = RoundedCornerShape(12.dp),
+    colors = TextFieldDefaults.outlinedTextFieldColors(
+        textColor = Color.Black,
+        placeholderColor = Color.DarkGray,
+        focusedLabelColor = PSJBlue,
+        unfocusedLabelColor = Color.DarkGray,
+        focusedBorderColor = PSJBlue,
+        unfocusedBorderColor = Color.Gray,
+        cursorColor = PSJBlue
+    )
+)
 
                     Spacer(modifier = Modifier.height(14.dp))
 
                     OutlinedTextField(
-                        value = password,
-                        onValueChange = {
-                            password = it
-                        },
-                        modifier = Modifier.fillMaxWidth(),
-                        label = { Text("Password") },
-                        singleLine = true,
-                        visualTransformation =
-                            PasswordVisualTransformation(),
-                        shape = RoundedCornerShape(12.dp)
-                    )
+    value = password,
+    onValueChange = {
+        password = it
+    },
+    modifier = Modifier.fillMaxWidth(),
+    label = { Text("Password") },
+    singleLine = true,
+    visualTransformation =
+        PasswordVisualTransformation(),
+    shape = RoundedCornerShape(12.dp),
+    colors = TextFieldDefaults.outlinedTextFieldColors(
+        textColor = Color.Black,
+        focusedLabelColor = PSJBlue,
+        unfocusedLabelColor = Color.DarkGray,
+        focusedBorderColor = PSJBlue,
+        unfocusedBorderColor = Color.Gray,
+        cursorColor = PSJBlue
+    )
+)
 
                     Spacer(modifier = Modifier.height(12.dp))
 
