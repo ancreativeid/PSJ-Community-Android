@@ -6,6 +6,7 @@ import java.io.FileInputStream
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.compose.compiler)
+    id("com.google.gms.google-services")
 }
 
 val keystorePropsFile = rootProject.file("release.properties")
@@ -20,7 +21,7 @@ val hasValidSigningProps = keystorePropsFile.exists().also { exists ->
         FileInputStream(keystorePropsFile).use { keystoreProps.load(it) }
     }
 }.let {
-    listOf("storeFile", "storePassword", 
+    listOf("storeFile", "storePassword",
             "keyAlias", "keyPassword").all { key ->
         keystoreProps[key] != null
     }
@@ -28,13 +29,13 @@ val hasValidSigningProps = keystorePropsFile.exists().also { exists ->
 
 
 android {
-    namespace = "com.psj.community"  
-    compileSdk = 36    
+    namespace = "com.psj.community"
+    compileSdk = 36
     // disable linter
     lint {
         checkReleaseBuilds = false
     }
-        
+
     signingConfigs {
         if (hasValidSigningProps) {
             create("release") {
@@ -47,20 +48,20 @@ android {
     }
 
     defaultConfig {
-        applicationId = "com.psj.community"  
-        minSdk = 21  
-        targetSdk = 36  
+        applicationId = "com.psj.community"
+        minSdk = 21
+        targetSdk = 36
         versionCode = 1
         versionName = "1.0"
-        
-        vectorDrawables { 
+
+        vectorDrawables {
             useSupportLibrary = true
         }
     }
-    
+
     compileOptions {
-        sourceCompatibility = JavaVersion.VERSION_17  
-        targetCompatibility = JavaVersion.VERSION_17  
+        sourceCompatibility = JavaVersion.VERSION_17
+        targetCompatibility = JavaVersion.VERSION_17
     }
 
     buildTypes {
@@ -74,7 +75,7 @@ android {
     }
 
     buildFeatures {
-        
+
         compose = true
     }
     packaging {
@@ -110,14 +111,14 @@ android {
             resources.merges.add("nativeMain/default/manifest")
         }
     }
-    
+
     configurations.all {
         resolutionStrategy {
             // Force the use of Kotlin stdlib 1.9.22 for all modules
             force("org.jetbrains.kotlin:kotlin-stdlib:2.3.21")
             force("org.jetbrains.kotlin:kotlin-stdlib-jdk7:2.3.21")
             force("org.jetbrains.kotlin:kotlin-stdlib-jdk8:2.3.21")
-    
+
             // Force specific AndroidX versions to avoid conflicts
             force("androidx.collection:collection:1.4.2")
             force("androidx.annotation:annotation:1.8.1")
@@ -161,5 +162,10 @@ dependencies {
       exclude(group = "org.jetbrains.kotlin", module = "kotlin-stdlib-jdk7")
       exclude(group = "org.jetbrains.kotlin", module = "kotlin-stdlib-jdk8")
     }
-    testImplementation(libs.junit)
+        testImplementation(libs.junit)
+
+    // Firebase
+    implementation(platform("com.google.firebase:firebase-bom:35.2.0"))
+    implementation("com.google.firebase:firebase-auth")
+    implementation("com.google.firebase:firebase-database")
 }
