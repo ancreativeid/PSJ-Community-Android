@@ -1,0 +1,30 @@
+{
+  "project_info": {
+    "project_number": "658197114937",
+    "firebase_url": "https://psj-jabodetabek-ca2ac-default-rtdb.firebaseio.com",
+    "project_id": "psj-jabodetabek-ca2ac",
+    "storage_bucket": "psj-jabodetabek-ca2ac.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:658197114937:android:074ca6b95b784b90abdde8",
+        "android_client_info": {
+          "package_name": "com.aistudio.PSJ.kxmpzq"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyD8gd55CoC8zX40V57itR1Qp-rKaRvvnXA"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
