@@ -49,7 +49,7 @@ android {
 
     defaultConfig {
         applicationId = "com.psj.community"
-        minSdk = 21
+        minSdk = 24
         targetSdk = 36
         versionCode = 1
         versionName = "1.0"
