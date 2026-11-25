@@ -1,5 +1,6 @@
 
 package com.psj.community
+import androidx.compose.material3.ExperimentalMaterial3Api
 
 import android.os.Bundle
 import androidx.activity.ComponentActivity
@@ -271,6 +272,7 @@ fun WelcomeScreen(
 
 // HALAMAN 3: LOGIN
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun LoginScreen(
     onBack: () -> Unit
