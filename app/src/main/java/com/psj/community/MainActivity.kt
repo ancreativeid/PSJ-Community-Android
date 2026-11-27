@@ -50,7 +50,7 @@ class MainActivity : ComponentActivity() {
 
 @Composable
 fun PSJApp() {
-    var currentPage by remember { mutableIntStateOf(0) }
+   var currentPage by remember { mutableStateOf(0) }
     var loggedInAccount by remember { mutableStateOf<UserAccount?>(null) }
     val authRepository = remember { FirebaseAuthRepository() }
     val context = LocalContext.current
