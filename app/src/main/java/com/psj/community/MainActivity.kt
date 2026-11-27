@@ -1,53 +1,45 @@
-
 package com.psj.community
 
 import android.os.Bundle
+import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
-import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.OutlinedTextField
-import androidx.compose.material3.Surface
-import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
-import androidx.compose.runtime.setValue
+import androidx.compose.foundation.verticalScroll
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
+import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.google.firebase.auth.FirebaseAuth
 import com.psj.community.data.auth.FirebaseAuthRepository
 import com.psj.community.data.model.UserAccount
 import com.psj.community.ui.theme.MyComposeApplicationTheme
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.tasks.await
+
+private val PSJBlue = Color(0xFF0756A5)
+private val PSJLightBlue = Color(0xFFEAF3FC)
+private val PSJDark = Color(0xFF172B4D)
+private val PSJMuted = Color(0xFF52657D)
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-
         setContent {
             MyComposeApplicationTheme {
                 PSJApp()
@@ -56,63 +48,58 @@ class MainActivity : ComponentActivity() {
     }
 }
 
-private val PSJBlue = Color(0xFF0756A5)
-private val PSJLightBlue = Color(0xFFEAF3FC)
-private val PSJDark = Color(0xFF172B4D)
-
 @Composable
 fun PSJApp() {
-    var currentPage by remember { mutableStateOf(0) }
-
-    var loggedInAccount by remember {
-        mutableStateOf<UserAccount?>(null)
-    }
-
-    val authRepository = remember {
-        FirebaseAuthRepository()
-    }
+    var currentPage by remember { mutableIntStateOf(0) }
+    var loggedInAccount by remember { mutableStateOf<UserAccount?>(null) }
+    val authRepository = remember { FirebaseAuthRepository() }
+    val context = LocalContext.current
 
     LaunchedEffect(Unit) {
-        delay(2000)
+        kotlinx.coroutines.delay(1800)
         currentPage = 1
     }
 
-    Surface(
-        modifier = Modifier.fillMaxSize(),
-        color = Color.White
-    ) {
+    Surface(Modifier.fillMaxSize(), color = PSJLightBlue) {
         when (currentPage) {
             0 -> SplashScreen()
-
-            1 -> WelcomeScreen(
-                onStart = { currentPage = 2 }
-            )
-
+            1 -> WelcomeScreen(onStart = { currentPage = 2 })
             2 -> LoginScreen(
                 authRepository = authRepository,
                 onBack = { currentPage = 1 },
-                onLoginSuccess = { account ->
-                    loggedInAccount = account
+                onLoginSuccess = {
+                    loggedInAccount = it
                     currentPage = 3
+                },
+                onRegistration = {
+                    Toast.makeText(
+                        context,
+                        "Formulir pendaftaran akan disiapkan pada tahap berikutnya.",
+                        Toast.LENGTH_LONG
+                    ).show()
                 }
             )
-
-            3 -> {
-                val account = loggedInAccount
-
-                if (account != null) {
-                    LoginSuccessScreen(
-                        account = account,
-                        onLogout = {
-                            authRepository.logout()
-                            loggedInAccount = null
-                            currentPage = 1
-                        }
-                    )
-                }
+            3 -> loggedInAccount?.let { account ->
+                LoginSuccessScreen(
+                    account = account,
+                    onLogout = {
+                        authRepository.logout()
+                        loggedInAccount = null
+                        currentPage = 1
+                    }
+                )
             }
         }
     }
+}
+
+@Composable
+private fun PSJLogo(modifier: Modifier = Modifier) {
+    Image(
+        painter = painterResource(id = R.drawable.psj_logo),
+        contentDescription = "Logo PSJ",
+        modifier = modifier
+    )
 }
 
 @Composable
@@ -120,90 +107,127 @@ fun SplashScreen() {
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .background(PSJBlue),
+            .background(PSJBlue)
+            .padding(24.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center
     ) {
+        PSJLogo(Modifier.widthIn(max = 260.dp).fillMaxWidth().height(130.dp))
+        Spacer(Modifier.height(14.dp))
         Text(
-            text = "PSJ",
+            "PSJ COMMUNITY",
             color = Color.White,
-            fontSize = 54.sp,
-            fontWeight = FontWeight.Bold
+            fontSize = 29.sp,
+            fontWeight = FontWeight.ExtraBold
         )
-
+        Spacer(Modifier.height(8.dp))
         Text(
-            text = "COMMUNITY",
+            "Solid • Profesional • Maju",
             color = Color.White,
-            fontSize = 20.sp,
-            fontWeight = FontWeight.Bold
+            fontSize = 15.sp,
+            fontWeight = FontWeight.Medium
         )
-
-        Spacer(modifier = Modifier.height(12.dp))
-
-        Text(
-            text = "Pencari Spxinstant se-Jabodetabek",
-            color = Color.White,
-            fontSize = 13.sp
-        )
-
-        Spacer(modifier = Modifier.height(30.dp))
-
-        CircularProgressIndicator(
-            color = Color.White
-        )
+        Spacer(Modifier.height(42.dp))
+        CircularProgressIndicator(color = Color.White)
+        Spacer(Modifier.height(14.dp))
+        Text("Mohon Tunggu...", color = Color.White, fontSize = 14.sp)
     }
 }
 
 @Composable
-fun WelcomeScreen(
-    onStart: () -> Unit
-) {
+fun WelcomeScreen(onStart: () -> Unit) {
     Column(
         modifier = Modifier
             .fillMaxSize()
             .background(PSJLightBlue)
-            .padding(28.dp),
-        horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.Center
+            .verticalScroll(rememberScrollState())
+            .padding(horizontal = 22.dp, vertical = 18.dp),
+        horizontalAlignment = Alignment.CenterHorizontally
     ) {
+        PSJLogo(Modifier.widthIn(max = 220.dp).fillMaxWidth().height(105.dp))
+        Spacer(Modifier.height(8.dp))
         Text(
-            text = "PSJ",
+            "PSJ COMMUNITY",
             color = PSJBlue,
-            fontSize = 52.sp,
-            fontWeight = FontWeight.Bold
+            fontSize = 25.sp,
+            fontWeight = FontWeight.ExtraBold,
+            textAlign = TextAlign.Center
         )
-
+        Spacer(Modifier.height(18.dp))
         Text(
-            text = "COMMUNITY",
-            color = PSJDark,
-            fontSize = 22.sp,
-            fontWeight = FontWeight.Bold
+            "SELAMAT DATANG",
+            color = PSJBlue,
+            fontSize = 25.sp,
+            fontWeight = FontWeight.ExtraBold,
+            textAlign = TextAlign.Center
         )
-
-        Spacer(modifier = Modifier.height(16.dp))
-
+        Spacer(Modifier.height(6.dp))
         Text(
-            text = "Solid • Profesional • Maju",
+            "PSJ - Pencari Spxinstant se-Jabodetabek",
             color = PSJDark,
-            fontSize = 15.sp
+            fontSize = 15.sp,
+            fontWeight = FontWeight.Bold,
+            textAlign = TextAlign.Center
         )
-
-        Spacer(modifier = Modifier.height(48.dp))
-
-        Button(
-            onClick = onStart,
-            modifier = Modifier.fillMaxWidth(),
-            colors = ButtonDefaults.buttonColors(
-                containerColor = PSJBlue
-            ),
-            shape = RoundedCornerShape(12.dp)
+        Spacer(Modifier.height(12.dp))
+        Surface(
+            color = PSJBlue,
+            shape = RoundedCornerShape(24.dp)
         ) {
             Text(
-                text = "MULAI",
-                modifier = Modifier.padding(8.dp),
-                fontWeight = FontWeight.Bold
+                "(Version 2.0 - Anniversary 1st and New Year's 2027 Edition)",
+                color = Color.White,
+                fontSize = 13.sp,
+                fontWeight = FontWeight.Bold,
+                textAlign = TextAlign.Center,
+                modifier = Modifier.padding(horizontal = 16.dp, vertical = 10.dp)
             )
         }
+        Spacer(Modifier.height(18.dp))
+        Text(
+            "Terima kasih telah menjadi bagian dari perjalanan 1 tahun PSJ.\n\n" +
+                "Aplikasi ini dibuat sebagai langkah awal digitalisasi komunitas " +
+                "untuk memberikan kemudahan dalam pelayanan anggota, administrasi, " +
+                "serta kegiatan komunitas.\n\n" +
+                "Semoga aplikasi ini dapat memberikan manfaat bagi seluruh Keluarga " +
+                "Besar PSJ - Pencari Spxinstant se-Jabodetabek.\n\n" +
+                "Mari bersama-sama membangun komunitas yang semakin modern, tertib, " +
+                "kompak, dan profesional.",
+            color = PSJDark,
+            fontSize = 14.sp,
+            lineHeight = 21.sp,
+            textAlign = TextAlign.Center
+        )
+        Spacer(Modifier.height(22.dp))
+        Button(
+            onClick = onStart,
+            modifier = Modifier.fillMaxWidth().height(52.dp),
+            colors = ButtonDefaults.buttonColors(
+                containerColor = PSJBlue,
+                contentColor = Color.White
+            ),
+            shape = RoundedCornerShape(14.dp)
+        ) {
+            Text("MULAI", fontWeight = FontWeight.Bold, fontSize = 17.sp)
+        }
+        Spacer(Modifier.height(18.dp))
+        Text(
+            "Dipersembahkan untuk Anniversary 1 Tahun\ndan menyambut Tahun Baru 2027\n" +
+                "PSJ - Pencari Spxinstant se-Jabodetabek",
+            color = PSJDark,
+            fontSize = 12.sp,
+            fontWeight = FontWeight.SemiBold,
+            textAlign = TextAlign.Center,
+            lineHeight = 18.sp
+        )
+        Spacer(Modifier.height(8.dp))
+        Text(
+            "© 2026 Seluruh Hak Cipta Dilindungi",
+            color = PSJMuted,
+            fontSize = 11.sp,
+            textAlign = TextAlign.Center
+        )
+        Spacer(Modifier.height(12.dp))
     }
 }
 
@@ -212,74 +236,107 @@ fun WelcomeScreen(
 fun LoginScreen(
     authRepository: FirebaseAuthRepository,
     onBack: () -> Unit,
-    onLoginSuccess: (UserAccount) -> Unit
+    onLoginSuccess: (UserAccount) -> Unit,
+    onRegistration: () -> Unit
 ) {
     var email by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
+    var showPassword by remember { mutableStateOf(false) }
+    var rememberMe by remember { mutableStateOf(true) }
     var errorMessage by remember { mutableStateOf("") }
+    var infoMessage by remember { mutableStateOf("") }
     var isLoading by remember { mutableStateOf(false) }
-
     val scope = rememberCoroutineScope()
 
     Column(
         modifier = Modifier
             .fillMaxSize()
             .background(PSJLightBlue)
-            .padding(24.dp),
+            .verticalScroll(rememberScrollState())
+            .padding(horizontal = 20.dp, vertical = 18.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center
     ) {
+        PSJLogo(Modifier.widthIn(max = 190.dp).fillMaxWidth().height(90.dp))
+        Spacer(Modifier.height(6.dp))
         Text(
-            text = "PSJ COMMUNITY",
+            "PSJ COMMUNITY",
             color = PSJBlue,
             fontSize = 25.sp,
-            fontWeight = FontWeight.Bold
+            fontWeight = FontWeight.ExtraBold
         )
-
-        Spacer(modifier = Modifier.height(8.dp))
-
-        Text(
-            text = "Masuk ke akun PSJ kamu",
-            color = PSJDark,
-            fontSize = 14.sp
-        )
-
-        Spacer(modifier = Modifier.height(28.dp))
+        Spacer(Modifier.height(18.dp))
 
         Surface(
             modifier = Modifier.fillMaxWidth(),
-            shape = RoundedCornerShape(18.dp),
             color = Color.White,
-            shadowElevation = 4.dp
+            shape = RoundedCornerShape(20.dp),
+            shadowElevation = 5.dp
         ) {
             Column(
                 modifier = Modifier.padding(20.dp),
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
                 Text(
-                    text = "LOGIN AKUN",
+                    "LOGIN ANGGOTA",
                     color = PSJBlue,
-                    fontSize = 19.sp,
-                    fontWeight = FontWeight.Bold
+                    fontSize = 20.sp,
+                    fontWeight = FontWeight.ExtraBold
                 )
-
-                Spacer(modifier = Modifier.height(20.dp))
+                Spacer(Modifier.height(6.dp))
+                Text(
+                    "Masukan Email dan Password Anda untuk masuk ke Aplikasi",
+                    color = PSJDark,
+                    fontSize = 13.sp,
+                    textAlign = TextAlign.Center
+                )
+                Spacer(Modifier.height(18.dp))
 
                 OutlinedTextField(
                     value = email,
                     onValueChange = {
                         email = it
                         errorMessage = ""
+                        infoMessage = ""
                     },
                     modifier = Modifier.fillMaxWidth(),
-                    label = { Text("Email") },
+                    label = { Text("Email", color = PSJBlue) },
+                    placeholder = { Text("Masukkan email terdaftar", color = PSJMuted) },
                     singleLine = true,
-                    keyboardOptions = KeyboardOptions(
-                        keyboardType = KeyboardType.Email
+                    enabled = !isLoading,
+                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email),
+                    colors = OutlinedTextFieldDefaults.colors(
+                        focusedTextColor = PSJDark,
+                        unfocusedTextColor = PSJDark,
+                        focusedBorderColor = PSJBlue,
+                        unfocusedBorderColor = PSJMuted,
+                        cursorColor = PSJBlue
                     )
                 )
+                Spacer(Modifier.height(10.dp))
 
-                Spacer(modifier = Modifier.height(12.dp))
+                OutlinedTextField(
+                    value = "",
+                    onValueChange = {},
+                    modifier = Modifier.fillMaxWidth(),
+                    readOnly = true,
+                    label = { Text("ID PSJ", color = PSJBlue) },
+                    placeholder = {
+                        Text(
+                            "Otomatis muncul setelah akun dikenali",
+                            color = PSJMuted,
+                            fontSize = 12.sp
+                        )
+                    },
+                    singleLine = true,
+                    colors = OutlinedTextFieldDefaults.colors(
+                        disabledTextColor = PSJDark,
+                        disabledBorderColor = PSJMuted,
+                        disabledLabelColor = PSJBlue
+                    ),
+                    enabled = false
+                )
+                Spacer(Modifier.height(10.dp))
 
                 OutlinedTextField(
                     value = password,
@@ -288,168 +345,152 @@ fun LoginScreen(
                         errorMessage = ""
                     },
                     modifier = Modifier.fillMaxWidth(),
-                    label = { Text("Password") },
+                    label = { Text("Password", color = PSJBlue) },
                     singleLine = true,
-                    visualTransformation =
-                        PasswordVisualTransformation(),
-                    keyboardOptions = KeyboardOptions(
-                        keyboardType = KeyboardType.Password
+                    enabled = !isLoading,
+                    visualTransformation = if (showPassword) {
+                        VisualTransformation.None
+                    } else {
+                        PasswordVisualTransformation()
+                    },
+                    trailingIcon = {
+                        TextButton(onClick = { showPassword = !showPassword }) {
+                            Text(
+                                if (showPassword) "SEMBUNYIKAN" else "LIHAT",
+                                color = PSJBlue,
+                                fontSize = 10.sp,
+                                fontWeight = FontWeight.Bold
+                            )
+                        }
+                    },
+                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
+                    colors = OutlinedTextFieldDefaults.colors(
+                        focusedTextColor = PSJDark,
+                        unfocusedTextColor = PSJDark,
+                        focusedBorderColor = PSJBlue,
+                        unfocusedBorderColor = PSJMuted,
+                        cursorColor = PSJBlue
                     )
                 )
 
-                Spacer(modifier = Modifier.height(16.dp))
+                Spacer(Modifier.height(8.dp))
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.SpaceBetween
+                ) {
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Checkbox(
+                            checked = rememberMe,
+                            onCheckedChange = { rememberMe = it },
+                            colors = CheckboxDefaults.colors(checkedColor = PSJBlue)
+                        )
+                        Text("Ingat saya", color = PSJDark, fontSize = 13.sp)
+                    }
+                    TextButton(
+                        enabled = email.contains("@") && !isLoading,
+                        onClick = {
+                            scope.launch {
+                                infoMessage = ""
+                                errorMessage = ""
+                                try {
+                                    FirebaseAuth.getInstance()
+                                        .sendPasswordResetEmail(email.trim())
+                                        .await()
+                                    infoMessage = "Link reset password telah dikirim ke email."
+                                } catch (e: Exception) {
+                                    errorMessage = e.localizedMessage
+                                        ?: "Tidak dapat mengirim reset password."
+                                }
+                            }
+                        }
+                    ) {
+                        Text("Lupa Password", color = PSJBlue, fontSize = 13.sp)
+                    }
+                }
 
                 if (errorMessage.isNotBlank()) {
                     Text(
-                        text = errorMessage,
-                        color = Color.Red,
-                        fontSize = 13.sp,
+                        errorMessage,
+                        color = Color(0xFFB3261E),
+                        fontSize = 12.sp,
                         textAlign = TextAlign.Center
                     )
-
-                    Spacer(modifier = Modifier.height(12.dp))
+                    Spacer(Modifier.height(6.dp))
+                }
+                if (infoMessage.isNotBlank()) {
+                    Text(
+                        infoMessage,
+                        color = Color(0xFF167044),
+                        fontSize = 12.sp,
+                        textAlign = TextAlign.Center
+                    )
+                    Spacer(Modifier.height(6.dp))
                 }
 
                 Button(
                     onClick = {
                         if (email.isBlank() || password.isBlank()) {
-                            errorMessage =
-                                "Email dan password wajib diisi."
+                            errorMessage = "Email dan password wajib diisi."
                         } else {
                             scope.launch {
                                 isLoading = true
                                 errorMessage = ""
-
                                 val result = authRepository.login(
                                     email = email.trim(),
                                     password = password
                                 )
-
                                 isLoading = false
-
                                 result.fold(
-                                    onSuccess = { account ->
-                                        onLoginSuccess(account)
-                                    },
-                                    onFailure = { error ->
-                                        errorMessage =
-                                            error.message
-                                                ?: "Login gagal. Periksa akun kamu."
+                                    onSuccess = { onLoginSuccess(it) },
+                                    onFailure = {
+                                        errorMessage = it.message
+                                            ?: "Login gagal. Periksa email dan password."
                                     }
                                 )
                             }
                         }
                     },
-                    modifier = Modifier.fillMaxWidth(),
+                    modifier = Modifier.fillMaxWidth().height(50.dp),
                     enabled = !isLoading,
                     colors = ButtonDefaults.buttonColors(
-                        containerColor = PSJBlue
+                        containerColor = PSJBlue,
+                        contentColor = Color.White
                     ),
                     shape = RoundedCornerShape(12.dp)
                 ) {
                     if (isLoading) {
                         CircularProgressIndicator(
                             color = Color.White,
-                            modifier = Modifier.height(22.dp),
+                            modifier = Modifier.size(22.dp),
                             strokeWidth = 2.dp
                         )
                     } else {
-                        Text(
-                            text = "MASUK",
-                            modifier = Modifier.padding(6.dp),
-                            fontWeight = FontWeight.Bold
-                        )
+                        Text("LOGIN", fontWeight = FontWeight.Bold, fontSize = 16.sp)
                     }
                 }
 
-                Spacer(modifier = Modifier.height(8.dp))
-
-                TextButton(
-                    onClick = onBack,
-                    enabled = !isLoading
+                Spacer(Modifier.height(8.dp))
+                Text(
+                    "Belum punya akun? Hubungi Pengurus",
+                    color = PSJDark,
+                    fontSize = 12.sp,
+                    textAlign = TextAlign.Center
+                )
+                OutlinedButton(
+                    onClick = onRegistration,
+                    modifier = Modifier.fillMaxWidth().padding(top = 8.dp),
+                    colors = ButtonDefaults.outlinedButtonColors(contentColor = PSJBlue)
                 ) {
-                    Text(
-                        text = "Kembali",
-                        color = PSJBlue
-                    )
+                    Text("+  Formulir Pendaftaran Anggota", fontWeight = FontWeight.Bold)
+                }
+                TextButton(onClick = onBack, enabled = !isLoading) {
+                    Text("Kembali", color = PSJBlue)
                 }
             }
         }
     }
 }
-
-@Composable
-fun LoginScreen(
-    account: UserAccount,
-    onLogout: () -> Unit
-) {
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .background(PSJLightBlue)
-            .padding(24.dp),
-        horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.Center
-    ) {
-        Text(
-            text = "LOGIN BERHASIL",
-            color = PSJBlue,
-            fontSize = 24.sp,
-            fontWeight = FontWeight.Bold
-        )
-
-        Spacer(modifier = Modifier.height(24.dp))
-
-        Surface(
-            modifier = Modifier.fillMaxWidth(),
-            color = Color.White,
-            shape = RoundedCornerShape(16.dp),
-            shadowElevation = 4.dp
-        ) {
-            Column(
-                modifier = Modifier.padding(20.dp)
-            ) {
-                Text(
-                    text = "Selamat datang,",
-                    color = PSJDark
-                )
-
-                Text(
-                    text = account.displayName,
-                    color = PSJBlue,
-                    fontSize = 22.sp,
-                    fontWeight = FontWeight.Bold
-                )
-
-                Spacer(modifier = Modifier.height(18.dp))
-
-                Text("ID Anggota: ${account.memberId}")
-                Spacer(modifier = Modifier.height(8.dp))
-
-                Text("Email: ${account.email}")
-                Spacer(modifier = Modifier.height(8.dp))
-
-                Text("Jabatan: ${account.role}")
-                Spacer(modifier = Modifier.height(8.dp))
-
-                Text("Status: ${account.status}")
-            }
-        }
-
-        Spacer(modifier = Modifier.height(24.dp))
-
-        Button(
-            onClick = onLogout,
-            modifier = Modifier.fillMaxWidth(),
-            colors = ButtonDefaults.buttonColors(
-                containerColor = PSJBlue
-            )
-        ) {
-            Text("KELUAR AKUN")
-        }
-    }
-}
-
 
 @Composable
 fun LoginSuccessScreen(
@@ -464,53 +505,54 @@ fun LoginSuccessScreen(
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center
     ) {
+        PSJLogo(Modifier.widthIn(max = 180.dp).fillMaxWidth().height(85.dp))
+        Spacer(Modifier.height(12.dp))
         Text(
-            text = "SELAMAT DATANG",
+            "SELAMAT DATANG",
             color = PSJBlue,
             fontSize = 24.sp,
             fontWeight = FontWeight.Bold
         )
-
-        Spacer(modifier = Modifier.height(16.dp))
-
-        Text(
-            text = account.displayName,
-            color = PSJDark,
-            fontSize = 22.sp,
-            fontWeight = FontWeight.Bold
-        )
-
-        Text(
-            text = account.memberId,
-            color = PSJDark,
-            fontSize = 16.sp
-        )
-
-        Text(
-            text = "Jabatan: ${account.role}",
-            color = PSJDark,
-            fontSize = 14.sp
-        )
-
-        Spacer(modifier = Modifier.height(24.dp))
-
-        Text(
-            text = "Status: ${account.status}",
-            color = PSJBlue,
-            fontWeight = FontWeight.Bold
-        )
-
-        Spacer(modifier = Modifier.height(30.dp))
-
+        Spacer(Modifier.height(16.dp))
+        Surface(
+            modifier = Modifier.fillMaxWidth(),
+            color = Color.White,
+            shape = RoundedCornerShape(16.dp),
+            shadowElevation = 4.dp
+        ) {
+            Column(
+                modifier = Modifier.padding(20.dp),
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
+                Text(
+                    account.displayName,
+                    color = PSJDark,
+                    fontSize = 22.sp,
+                    fontWeight = FontWeight.Bold
+                )
+                Spacer(Modifier.height(8.dp))
+                Text("ID Anggota: ${account.memberId}", color = PSJDark)
+                Text("Email: ${account.email}", color = PSJDark)
+                Text("Jabatan: ${account.role}", color = PSJDark)
+                Spacer(Modifier.height(8.dp))
+                Text(
+                    "Status: ${account.status}",
+                    color = Color(0xFF167044),
+                    fontWeight = FontWeight.Bold
+                )
+            }
+        }
+        Spacer(Modifier.height(24.dp))
         Button(
             onClick = onLogout,
-            modifier = Modifier.fillMaxWidth(),
+            modifier = Modifier.fillMaxWidth().height(50.dp),
             colors = ButtonDefaults.buttonColors(
-                containerColor = PSJBlue
+                containerColor = PSJBlue,
+                contentColor = Color.White
             ),
             shape = RoundedCornerShape(12.dp)
         ) {
-            Text("KELUAR AKUN")
+            Text("KELUAR AKUN", fontWeight = FontWeight.Bold)
         }
     }
 }
