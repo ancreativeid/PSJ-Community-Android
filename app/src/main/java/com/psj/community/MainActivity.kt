@@ -449,3 +449,68 @@ fun LoginScreen(
         }
     }
 }
+
+
+@Composable
+fun LoginSuccessScreen(
+    account: UserAccount,
+    onLogout: () -> Unit
+) {
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(PSJLightBlue)
+            .padding(24.dp),
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.Center
+    ) {
+        Text(
+            text = "SELAMAT DATANG",
+            color = PSJBlue,
+            fontSize = 24.sp,
+            fontWeight = FontWeight.Bold
+        )
+
+        Spacer(modifier = Modifier.height(16.dp))
+
+        Text(
+            text = account.displayName,
+            color = PSJDark,
+            fontSize = 22.sp,
+            fontWeight = FontWeight.Bold
+        )
+
+        Text(
+            text = account.memberId,
+            color = PSJDark,
+            fontSize = 16.sp
+        )
+
+        Text(
+            text = "Jabatan: ${account.role}",
+            color = PSJDark,
+            fontSize = 14.sp
+        )
+
+        Spacer(modifier = Modifier.height(24.dp))
+
+        Text(
+            text = "Status: ${account.status}",
+            color = PSJBlue,
+            fontWeight = FontWeight.Bold
+        )
+
+        Spacer(modifier = Modifier.height(30.dp))
+
+        Button(
+            onClick = onLogout,
+            modifier = Modifier.fillMaxWidth(),
+            colors = ButtonDefaults.buttonColors(
+                containerColor = PSJBlue
+            ),
+            shape = RoundedCornerShape(12.dp)
+        ) {
+            Text("KELUAR AKUN")
+        }
+    }
+}
