@@ -207,6 +207,7 @@ fun WelcomeScreen(
     }
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun LoginScreen(
     authRepository: FirebaseAuthRepository,
@@ -377,7 +378,6 @@ fun LoginScreen(
     }
 }
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun LoginScreen(
     account: UserAccount,
