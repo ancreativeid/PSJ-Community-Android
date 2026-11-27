@@ -306,7 +306,7 @@ fun LoginScreen(
                     singleLine = true,
                     enabled = !isLoading,
                     keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email),
-                    colors = OutlinedTextFieldDefaults.colors(
+                    colors = TextFieldDefaults.outlinedTextFieldColors(
                         focusedTextColor = PSJDark,
                         unfocusedTextColor = PSJDark,
                         focusedBorderColor = PSJBlue,
@@ -330,7 +330,7 @@ fun LoginScreen(
                         )
                     },
                     singleLine = true,
-                    colors = OutlinedTextFieldDefaults.colors(
+                    colors = TextFieldDefaults.outlinedTextFieldColors(
                         disabledTextColor = PSJDark,
                         disabledBorderColor = PSJMuted,
                         disabledLabelColor = PSJBlue
@@ -365,7 +365,7 @@ fun LoginScreen(
                         }
                     },
                     keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
-                    colors = OutlinedTextFieldDefaults.colors(
+                    colors = TextFieldDefaults.outlinedTextFieldColors(
                         focusedTextColor = PSJDark,
                         unfocusedTextColor = PSJDark,
                         focusedBorderColor = PSJBlue,
