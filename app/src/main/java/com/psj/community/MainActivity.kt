@@ -798,17 +798,17 @@ fun DashboardScreen(
                         )
                     }
 
-                    DrawerMenuItem(
-                        icon = "📋",
-                        title = "Data Anggota"
-                    ) {
-                        openDrawerMenu(
-                            "Data Anggota",
-                            scope,
-                            drawerState,
-                            context
-                        )
-                    }
+                   DrawerMenuItem(
+    icon = "📋",
+    title = "Data Anggota",
+    selected = selectedMenu == "Data Anggota"
+) {
+    selectedMenu = "Data Anggota"
+
+    scope.launch {
+        drawerState.close()
+    }
+}
 
                     DrawerMenuItem(
                         icon = "📸",
@@ -965,7 +965,17 @@ fun DashboardScreen(
                 }
             }
         }
-    ) {
+       ) {
+
+        if (selectedMenu == "Data Anggota") {
+
+            MemberListScreen(
+                onBack = {
+                    selectedMenu = "Beranda"
+                }
+            )
+
+        } else {
 
         // HALAMAN UTAMA
         Column(
@@ -1370,13 +1380,14 @@ fun DashboardScreen(
                 ) {
                     selectedMenu = "Profil"
 
-                    Toast.makeText(
+                                        Toast.makeText(
                         context,
                         "Menu Profil PSJ",
                         Toast.LENGTH_SHORT
                     ).show()
                 }
             }
+        }
         }
     }
 }
