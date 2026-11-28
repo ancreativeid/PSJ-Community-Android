@@ -665,7 +665,7 @@ fun DashboardScreen(
     )
 
     val slideScrollState = rememberScrollState()
-    var currentSlide by remember { mutableIntStateOf(0) }
+   var currentSlide by remember { mutableStateOf(0) }
     val scope = rememberCoroutineScope()
 
     LaunchedEffect(slideScrollState.value) {
