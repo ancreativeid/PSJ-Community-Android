@@ -1,3 +1,5 @@
+@file:OptIn(androidx.compose.material3.ExperimentalMaterial3Api::class)
+
 package com.psj.community
 
 import android.os.Bundle
@@ -1482,13 +1484,15 @@ fun DrawerMenuItem(
 
 @Composable
 fun DrawerDivider() {
-    HorizontalDivider(
-        modifier = Modifier.padding(
-            horizontal = 18.dp,
-            vertical = 7.dp
-        ),
-        color = Color(0xFFE6ECF2),
-        thickness = 1.dp
+    Box(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(
+                horizontal = 18.dp,
+                vertical = 7.dp
+            )
+            .height(1.dp)
+            .background(Color(0xFFE6ECF2))
     )
 }
 
