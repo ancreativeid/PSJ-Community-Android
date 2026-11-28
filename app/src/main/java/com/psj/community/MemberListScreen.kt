@@ -46,9 +46,9 @@ fun MemberListScreen(
         mutableStateOf("")
     }
 
-    var reloadKey by remember {
-        mutableIntStateOf(0)
-    }
+   var reloadKey by remember {
+    mutableStateOf(0)
+}
 
     LaunchedEffect(reloadKey) {
         isLoading = true
@@ -301,10 +301,10 @@ fun MemberListScreen(
                         modifier = Modifier.weight(1f),
                         verticalArrangement = Arrangement.spacedBy(9.dp)
                     ) {
-                        items(
-                            items = filteredMembers,
-                            key = { it.id }
-                        ) { member ->
+                        items<PSJMemberItem>(
+    items = filteredMembers,
+    key = { member -> member.id }
+) { member ->
 
                             Surface(
                                 modifier = Modifier.fillMaxWidth(),
