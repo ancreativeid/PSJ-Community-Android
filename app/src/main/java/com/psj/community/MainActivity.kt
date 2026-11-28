@@ -45,6 +45,7 @@ private val PSJMuted = Color(0xFF52657D)
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
         setContent {
             MyComposeApplicationTheme {
                 PSJApp()
@@ -647,16 +648,23 @@ fun LoginScreen(
 }
 
 // ======================================================
-// DASHBOARD SCREEN
+// DASHBOARD + NAVIGATION DRAWER
 // ======================================================
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun DashboardScreen(
     account: UserAccount,
     onLogout: () -> Unit
 ) {
     val context = LocalContext.current
+    val drawerState = rememberDrawerState(
+        initialValue = DrawerValue.Closed
+    )
+    val scope = rememberCoroutineScope()
+
     var selectedMenu by remember { mutableStateOf("Beranda") }
+    var currentSlide by remember { mutableStateOf(0) }
 
     val slides = listOf(
         "DOKUMENTASI KOPDAR PSJ",
@@ -665,403 +673,823 @@ fun DashboardScreen(
     )
 
     val slideScrollState = rememberScrollState()
-   var currentSlide by remember { mutableStateOf(0) }
-    val scope = rememberCoroutineScope()
 
     LaunchedEffect(slideScrollState.value) {
         currentSlide = ((slideScrollState.value + 151) / 302)
             .coerceIn(0, slides.lastIndex)
     }
 
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .background(PSJLightBlue)
-    ) {
-
-        // HEADER
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .background(PSJBlue)
-                .padding(
-                    horizontal = 18.dp,
-                    vertical = 16.dp
-                ),
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            Column(
-                modifier = Modifier.weight(1f)
+    ModalNavigationDrawer(
+        drawerState = drawerState,
+        gesturesEnabled = true,
+        drawerContent = {
+            ModalDrawerSheet(
+                modifier = Modifier.width(310.dp),
+                drawerContainerColor = Color.White
             ) {
-                Text(
-                    "PSJ COMMUNITY",
-                    color = Color.White,
-                    fontSize = 19.sp,
-                    fontWeight = FontWeight.ExtraBold
-                )
+                Column(
+                    modifier = Modifier
+                        .fillMaxHeight()
+                        .verticalScroll(rememberScrollState())
+                        .background(Color.White)
+                ) {
 
-                Text(
-                    "Solid • Profesional • Maju",
-                    color = Color.White,
-                    fontSize = 11.sp
-                )
-            }
-
-            Column(
-                horizontalAlignment = Alignment.End
-            ) {
-                Text(
-                    account.displayName,
-                    color = Color.White,
-                    fontWeight = FontWeight.Bold,
-                    fontSize = 13.sp
-                )
-
-                Text(
-                    account.memberId.ifBlank { "FOUNDER" },
-                    color = Color.White,
-                    fontSize = 11.sp
-                )
-
-                Text(
-                    "KELUAR",
-                    color = Color.White,
-                    fontSize = 10.sp,
-                    modifier = Modifier.clickable {
-                        onLogout()
-                    }
-                )
-            }
-        }
-
-        // KONTEN DASHBOARD
-        Column(
-            modifier = Modifier
-                .weight(1f)
-                .verticalScroll(rememberScrollState())
-                .padding(16.dp)
-        ) {
-            Text(
-                "Selamat Datang 👋",
-                color = PSJDark,
-                fontSize = 21.sp,
-                fontWeight = FontWeight.Bold
-            )
-
-            Text(
-                "Keluarga Besar PSJ - Pencari Spxinstant se-Jabodetabek",
-                color = PSJMuted,
-                fontSize = 12.sp
-            )
-
-            Spacer(Modifier.height(18.dp))
-
-            // SLIDE DOKUMENTASI
-            Text(
-                "Dokumentasi Kegiatan",
-                color = PSJDark,
-                fontSize = 17.sp,
-                fontWeight = FontWeight.Bold
-            )
-
-            Spacer(Modifier.height(10.dp))
-
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .horizontalScroll(slideScrollState),
-                horizontalArrangement = Arrangement.spacedBy(12.dp)
-            ) {
-                slides.forEachIndexed { index, title ->
-                    Surface(
+                    // HEADER PROFIL DRAWER
+                    Box(
                         modifier = Modifier
-                            .width(290.dp)
-                            .height(165.dp)
-                            .clickable {
-                                currentSlide = index
-                                scope.launch {
-                                    slideScrollState.animateScrollTo(
-                                        index * 302
+                            .fillMaxWidth()
+                            .background(
+                                Brush.verticalGradient(
+                                    listOf(
+                                        Color(0xFF0B70C9),
+                                        Color(0xFF063B78)
                                     )
-                                }
-                            },
-                        shape = RoundedCornerShape(18.dp),
-                        color = PSJBlue,
-                        shadowElevation = 4.dp
+                                )
+                            )
+                            .padding(
+                                horizontal = 18.dp,
+                                vertical = 24.dp
+                            )
                     ) {
-                        Box(
-                            modifier = Modifier
-                                .fillMaxSize()
-                                .background(
-                                    Brush.verticalGradient(
-                                        listOf(
-                                            Color(0xFF0B70C9),
-                                            Color(0xFF063B78)
-                                        )
+                        Column {
+                            PSJLogo(
+                                Modifier
+                                    .size(72.dp)
+                                    .background(
+                                        Color.White,
+                                        RoundedCornerShape(14.dp)
                                     )
-                                ),
-                            contentAlignment = Alignment.Center
-                        ) {
-                            Column(
-                                horizontalAlignment = Alignment.CenterHorizontally,
-                                verticalArrangement = Arrangement.Center
+                                    .padding(5.dp)
+                            )
+
+                            Spacer(Modifier.height(14.dp))
+
+                            Text(
+                                "KELUARGA BESAR PSJ",
+                                color = Color.White,
+                                fontSize = 17.sp,
+                                fontWeight = FontWeight.ExtraBold
+                            )
+
+                            Spacer(Modifier.height(5.dp))
+
+                            Text(
+                                account.displayName,
+                                color = Color.White,
+                                fontSize = 15.sp,
+                                fontWeight = FontWeight.Bold
+                            )
+
+                            Text(
+                                if (account.memberId.isBlank()) {
+                                    "FOUNDER"
+                                } else {
+                                    account.memberId
+                                },
+                                color = Color.White,
+                                fontSize = 12.sp
+                            )
+
+                            Spacer(Modifier.height(8.dp))
+
+                            Surface(
+                                color = Color.White.copy(alpha = 0.18f),
+                                shape = RoundedCornerShape(20.dp)
                             ) {
                                 Text(
-                                    "📸",
-                                    fontSize = 38.sp
-                                )
-
-                                Spacer(Modifier.height(10.dp))
-
-                                Text(
-                                    title,
+                                    "AKUN PSJ",
                                     color = Color.White,
-                                    fontSize = 14.sp,
-                                    fontWeight = FontWeight.ExtraBold,
-                                    textAlign = TextAlign.Center
-                                )
-
-                                Text(
-                                    "Foto kegiatan PSJ",
-                                    color = Color.White,
-                                    fontSize = 11.sp
+                                    fontSize = 10.sp,
+                                    fontWeight = FontWeight.Bold,
+                                    modifier = Modifier.padding(
+                                        horizontal = 12.dp,
+                                        vertical = 6.dp
+                                    )
                                 )
                             }
                         }
                     }
+
+                    Spacer(Modifier.height(12.dp))
+
+                    // MENU UTAMA
+                    DrawerSectionTitle("MENU UTAMA")
+
+                    DrawerMenuItem(
+                        icon = "⌂",
+                        title = "Dashboard",
+                        selected = selectedMenu == "Beranda"
+                    ) {
+                        selectedMenu = "Beranda"
+                        scope.launch { drawerState.close() }
+                    }
+
+                    DrawerMenuItem(
+                        icon = "👥",
+                        title = "Profil PSJ"
+                    ) {
+                        openDrawerMenu(
+                            "Profil PSJ",
+                            scope,
+                            drawerState,
+                            context
+                        )
+                    }
+
+                    DrawerMenuItem(
+                        icon = "📋",
+                        title = "Data Anggota"
+                    ) {
+                        openDrawerMenu(
+                            "Data Anggota",
+                            scope,
+                            drawerState,
+                            context
+                        )
+                    }
+
+                    DrawerMenuItem(
+                        icon = "📸",
+                        title = "Dokumentasi"
+                    ) {
+                        openDrawerMenu(
+                            "Dokumentasi",
+                            scope,
+                            drawerState,
+                            context
+                        )
+                    }
+
+                    DrawerMenuItem(
+                        icon = "🚨",
+                        title = "URC Darurat"
+                    ) {
+                        openDrawerMenu(
+                            "URC Darurat",
+                            scope,
+                            drawerState,
+                            context
+                        )
+                    }
+
+                    DrawerDivider()
+
+                    // LAYANAN DIGITAL
+                    DrawerSectionTitle("LAYANAN DIGITAL")
+
+                    DrawerMenuItem(
+                        icon = "🪪",
+                        title = "KTA Digital"
+                    ) {
+                        openDrawerMenu(
+                            "KTA Digital",
+                            scope,
+                            drawerState,
+                            context
+                        )
+                    }
+
+                    DrawerMenuItem(
+                        icon = "✓",
+                        title = "Absensi Digital"
+                    ) {
+                        openDrawerMenu(
+                            "Absensi Digital",
+                            scope,
+                            drawerState,
+                            context
+                        )
+                    }
+
+                    DrawerMenuItem(
+                        icon = "💰",
+                        title = "Kas Digital"
+                    ) {
+                        openDrawerMenu(
+                            "Kas Digital",
+                            scope,
+                            drawerState,
+                            context
+                        )
+                    }
+
+                    DrawerMenuItem(
+                        icon = "📄",
+                        title = "Proposal Otomatis"
+                    ) {
+                        openDrawerMenu(
+                            "Proposal Otomatis",
+                            scope,
+                            drawerState,
+                            context
+                        )
+                    }
+
+                    DrawerDivider()
+
+                    // KEANGGOTAAN
+                    DrawerSectionTitle("KEANGGOTAAN")
+
+                    DrawerMenuItem(
+                        icon = "➕",
+                        title = "Pendaftaran Anggota"
+                    ) {
+                        openDrawerMenu(
+                            "Pendaftaran Anggota",
+                            scope,
+                            drawerState,
+                            context
+                        )
+                    }
+
+                    DrawerMenuItem(
+                        icon = "📤",
+                        title = "Pengunduran Diri"
+                    ) {
+                        openDrawerMenu(
+                            "Pengunduran Diri",
+                            scope,
+                            drawerState,
+                            context
+                        )
+                    }
+
+                    DrawerDivider()
+
+                    // LAINNYA
+                    DrawerSectionTitle("LAINNYA")
+
+                    DrawerMenuItem(
+                        icon = "ℹ",
+                        title = "Tentang Aplikasi"
+                    ) {
+                        openDrawerMenu(
+                            "Tentang Aplikasi",
+                            scope,
+                            drawerState,
+                            context
+                        )
+                    }
+
+                    Spacer(Modifier.height(12.dp))
+
+                    DrawerDivider()
+
+                    // KELUAR AKUN
+                    DrawerMenuItem(
+                        icon = "⇥",
+                        title = "Keluar Akun",
+                        iconColor = Color(0xFFC62828),
+                        textColor = Color(0xFFC62828)
+                    ) {
+                        scope.launch {
+                            drawerState.close()
+                            onLogout()
+                        }
+                    }
+
+                    Spacer(Modifier.height(20.dp))
+
+                    Text(
+                        "PSJ COMMUNITY V2.0",
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(bottom = 18.dp),
+                        color = PSJMuted,
+                        fontSize = 10.sp,
+                        textAlign = TextAlign.Center,
+                        fontWeight = FontWeight.Bold
+                    )
                 }
             }
+        }
+    ) {
 
-            Spacer(Modifier.height(10.dp))
+        // HALAMAN UTAMA
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .background(PSJLightBlue)
+        ) {
 
-            // INDIKATOR SLIDE
+            // HEADER DASHBOARD
             Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.Center
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .background(PSJBlue)
+                    .padding(
+                        horizontal = 14.dp,
+                        vertical = 13.dp
+                    ),
+                verticalAlignment = Alignment.CenterVertically
             ) {
-                slides.indices.forEach { index ->
-                    Box(
-                        modifier = Modifier
-                            .padding(horizontal = 4.dp)
-                            .size(
-                                if (currentSlide == index) 10.dp else 7.dp
-                            )
-                            .background(
-                                if (currentSlide == index) {
-                                    PSJBlue
-                                } else {
-                                    Color.LightGray
-                                },
-                                CircleShape
-                            )
-                            .clickable {
-                                currentSlide = index
-                                scope.launch {
-                                    slideScrollState.animateScrollTo(
-                                        index * 302
-                                    )
-                                }
+
+                // TOMBOL HAMBURGER
+                Surface(
+                    modifier = Modifier
+                        .size(42.dp)
+                        .clickable {
+                            scope.launch {
+                                drawerState.open()
                             }
+                        },
+                    shape = RoundedCornerShape(10.dp),
+                    color = Color.White.copy(alpha = 0.15f)
+                ) {
+                    Box(
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Text(
+                            "☰",
+                            color = Color.White,
+                            fontSize = 25.sp,
+                            fontWeight = FontWeight.Bold
+                        )
+                    }
+                }
+
+                Spacer(Modifier.width(12.dp))
+
+                Column(
+                    modifier = Modifier.weight(1f)
+                ) {
+                    Text(
+                        "PSJ COMMUNITY",
+                        color = Color.White,
+                        fontSize = 18.sp,
+                        fontWeight = FontWeight.ExtraBold
+                    )
+
+                    Text(
+                        "Solid • Profesional • Maju",
+                        color = Color.White,
+                        fontSize = 11.sp
+                    )
+                }
+
+                Column(
+                    horizontalAlignment = Alignment.End
+                ) {
+                    Text(
+                        account.displayName,
+                        color = Color.White,
+                        fontWeight = FontWeight.Bold,
+                        fontSize = 12.sp
+                    )
+
+                    Text(
+                        account.memberId.ifBlank { "FOUNDER" },
+                        color = Color.White,
+                        fontSize = 10.sp
                     )
                 }
             }
 
-            Spacer(Modifier.height(24.dp))
-
-            // RINGKASAN KAS
-            Text(
-                "Ringkasan Keuangan PSJ",
-                color = PSJDark,
-                fontSize = 17.sp,
-                fontWeight = FontWeight.Bold
-            )
-
-            Spacer(Modifier.height(10.dp))
-
-            Row(
+            // KONTEN DASHBOARD
+            Column(
                 modifier = Modifier
-                    .fillMaxWidth()
-                    .horizontalScroll(rememberScrollState()),
-                horizontalArrangement = Arrangement.spacedBy(10.dp)
+                    .weight(1f)
+                    .verticalScroll(rememberScrollState())
+                    .padding(16.dp)
             ) {
-                KasDashboardCard(
-                    "KAS BULANAN",
-                    "Rp0",
-                    "💰"
+                Text(
+                    "Selamat Datang 👋",
+                    color = PSJDark,
+                    fontSize = 21.sp,
+                    fontWeight = FontWeight.Bold
                 )
 
-                KasDashboardCard(
-                    "KAS ANNIVERSARY",
-                    "Rp0",
-                    "🎉"
+                Text(
+                    "Keluarga Besar PSJ - Pencari Spxinstant se-Jabodetabek",
+                    color = PSJMuted,
+                    fontSize = 12.sp
                 )
 
-                KasDashboardCard(
-                    "KAS SOLIDARITAS",
-                    "Rp0",
-                    "🤝"
+                Spacer(Modifier.height(18.dp))
+
+                // SLIDE DOKUMENTASI
+                Text(
+                    "Dokumentasi Kegiatan",
+                    color = PSJDark,
+                    fontSize = 17.sp,
+                    fontWeight = FontWeight.Bold
                 )
-            }
 
-            Spacer(Modifier.height(24.dp))
+                Spacer(Modifier.height(10.dp))
 
-            // FLYER ACARA
-            Text(
-                "Acara PSJ Terdekat",
-                color = PSJDark,
-                fontSize = 17.sp,
-                fontWeight = FontWeight.Bold
-            )
-
-            Spacer(Modifier.height(10.dp))
-
-            Surface(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(205.dp),
-                shape = RoundedCornerShape(18.dp),
-                color = Color.White,
-                shadowElevation = 4.dp
-            ) {
-                Box(
+                Row(
                     modifier = Modifier
-                        .fillMaxSize()
-                        .background(PSJBlue),
-                    contentAlignment = Alignment.Center
+                        .fillMaxWidth()
+                        .horizontalScroll(slideScrollState),
+                    horizontalArrangement = Arrangement.spacedBy(12.dp)
                 ) {
-                    Column(
-                        horizontalAlignment = Alignment.CenterHorizontally
-                    ) {
-                        Text(
-                            "📅",
-                            fontSize = 42.sp
-                        )
+                    slides.forEachIndexed { index, title ->
+                        Surface(
+                            modifier = Modifier
+                                .width(290.dp)
+                                .height(165.dp)
+                                .clickable {
+                                    currentSlide = index
+                                    scope.launch {
+                                        slideScrollState.animateScrollTo(
+                                            index * 302
+                                        )
+                                    }
+                                },
+                            shape = RoundedCornerShape(18.dp),
+                            color = PSJBlue,
+                            shadowElevation = 4.dp
+                        ) {
+                            Box(
+                                modifier = Modifier
+                                    .fillMaxSize()
+                                    .background(
+                                        Brush.verticalGradient(
+                                            listOf(
+                                                Color(0xFF0B70C9),
+                                                Color(0xFF063B78)
+                                            )
+                                        )
+                                    ),
+                                contentAlignment = Alignment.Center
+                            ) {
+                                Column(
+                                    horizontalAlignment = Alignment.CenterHorizontally,
+                                    verticalArrangement = Arrangement.Center
+                                ) {
+                                    Text(
+                                        "📸",
+                                        fontSize = 38.sp
+                                    )
 
-                        Spacer(Modifier.height(8.dp))
+                                    Spacer(Modifier.height(10.dp))
 
-                        Text(
-                            "FLYER ACARA PSJ",
-                            color = Color.White,
-                            fontSize = 19.sp,
-                            fontWeight = FontWeight.ExtraBold
-                        )
+                                    Text(
+                                        title,
+                                        color = Color.White,
+                                        fontSize = 14.sp,
+                                        fontWeight = FontWeight.ExtraBold,
+                                        textAlign = TextAlign.Center
+                                    )
 
-                        Text(
-                            "Informasi kegiatan akan ditampilkan di sini",
-                            color = Color.White,
-                            fontSize = 11.sp,
-                            textAlign = TextAlign.Center
+                                    Text(
+                                        "Foto kegiatan PSJ",
+                                        color = Color.White,
+                                        fontSize = 11.sp
+                                    )
+                                }
+                            }
+                        }
+                    }
+                }
+
+                Spacer(Modifier.height(10.dp))
+
+                // INDIKATOR SLIDE
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.Center
+                ) {
+                    slides.indices.forEach { index ->
+                        Box(
+                            modifier = Modifier
+                                .padding(horizontal = 4.dp)
+                                .size(
+                                    if (currentSlide == index) 10.dp else 7.dp
+                                )
+                                .background(
+                                    if (currentSlide == index) {
+                                        PSJBlue
+                                    } else {
+                                        Color.LightGray
+                                    },
+                                    CircleShape
+                                )
+                                .clickable {
+                                    currentSlide = index
+                                    scope.launch {
+                                        slideScrollState.animateScrollTo(
+                                            index * 302
+                                        )
+                                    }
+                                }
                         )
                     }
                 }
-            }
 
-            Spacer(Modifier.height(20.dp))
-        }
+                Spacer(Modifier.height(24.dp))
 
-        // BOTTOM NAVIGATION
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .background(Color.White)
-                .padding(
-                    horizontal = 5.dp,
-                    vertical = 8.dp
-                ),
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            DashboardNavItem(
-                "Beranda",
-                "⌂",
-                selectedMenu == "Beranda"
-            ) {
-                selectedMenu = "Beranda"
-            }
+                // RINGKASAN KAS
+                Text(
+                    "Ringkasan Keuangan PSJ",
+                    color = PSJDark,
+                    fontSize = 17.sp,
+                    fontWeight = FontWeight.Bold
+                )
 
-            DashboardNavItem(
-                "Kas",
-                "💰",
-                selectedMenu == "Kas"
-            ) {
-                selectedMenu = "Kas"
-                Toast.makeText(
-                    context,
-                    "Menu Kas Digital",
-                    Toast.LENGTH_SHORT
-                ).show()
-            }
+                Spacer(Modifier.height(10.dp))
 
-            // TOMBOL QRIS TENGAH
-            Box(
-                modifier = Modifier
-                    .weight(1f)
-                    .offset(y = (-12).dp),
-                contentAlignment = Alignment.Center
-            ) {
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .horizontalScroll(rememberScrollState()),
+                    horizontalArrangement = Arrangement.spacedBy(10.dp)
+                ) {
+                    KasDashboardCard(
+                        "KAS BULANAN",
+                        "Rp0",
+                        "💰"
+                    )
+
+                    KasDashboardCard(
+                        "KAS ANNIVERSARY",
+                        "Rp0",
+                        "🎉"
+                    )
+
+                    KasDashboardCard(
+                        "KAS SOLIDARITAS",
+                        "Rp0",
+                        "🤝"
+                    )
+                }
+
+                Spacer(Modifier.height(24.dp))
+
+                // FLYER ACARA
+                Text(
+                    "Acara PSJ Terdekat",
+                    color = PSJDark,
+                    fontSize = 17.sp,
+                    fontWeight = FontWeight.Bold
+                )
+
+                Spacer(Modifier.height(10.dp))
+
                 Surface(
                     modifier = Modifier
-                        .size(62.dp)
-                        .clickable {
-                            Toast.makeText(
-                                context,
-                                "Menu QRIS PSJ",
-                                Toast.LENGTH_SHORT
-                            ).show()
-                        },
-                    shape = CircleShape,
-                    color = PSJBlue,
-                    shadowElevation = 8.dp
+                        .fillMaxWidth()
+                        .height(205.dp),
+                    shape = RoundedCornerShape(18.dp),
+                    color = Color.White,
+                    shadowElevation = 4.dp
                 ) {
                     Box(
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .background(PSJBlue),
                         contentAlignment = Alignment.Center
                     ) {
                         Column(
                             horizontalAlignment = Alignment.CenterHorizontally
                         ) {
                             Text(
-                                "▦",
+                                "📅",
+                                fontSize = 42.sp
+                            )
+
+                            Spacer(Modifier.height(8.dp))
+
+                            Text(
+                                "FLYER ACARA PSJ",
                                 color = Color.White,
-                                fontSize = 27.sp
+                                fontSize = 19.sp,
+                                fontWeight = FontWeight.ExtraBold
                             )
 
                             Text(
-                                "QRIS",
+                                "Informasi kegiatan akan ditampilkan di sini",
                                 color = Color.White,
-                                fontSize = 9.sp,
-                                fontWeight = FontWeight.Bold
+                                fontSize = 11.sp,
+                                textAlign = TextAlign.Center
                             )
                         }
                     }
                 }
+
+                Spacer(Modifier.height(20.dp))
             }
 
-            DashboardNavItem(
-                "Absensi",
-                "✓",
-                selectedMenu == "Absensi"
+            // BOTTOM NAVIGATION TETAP DIPERTAHANKAN
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .background(Color.White)
+                    .padding(
+                        horizontal = 5.dp,
+                        vertical = 8.dp
+                    ),
+                verticalAlignment = Alignment.CenterVertically
             ) {
-                selectedMenu = "Absensi"
-                Toast.makeText(
-                    context,
-                    "Menu Absensi Digital",
-                    Toast.LENGTH_SHORT
-                ).show()
-            }
+                DashboardNavItem(
+                    "Beranda",
+                    "⌂",
+                    selectedMenu == "Beranda"
+                ) {
+                    selectedMenu = "Beranda"
+                }
 
-            DashboardNavItem(
-                "Profil",
-                "👤",
-                selectedMenu == "Profil"
-            ) {
-                selectedMenu = "Profil"
-                Toast.makeText(
-                    context,
-                    "Menu Profil PSJ",
-                    Toast.LENGTH_SHORT
-                ).show()
+                DashboardNavItem(
+                    "Kas",
+                    "💰",
+                    selectedMenu == "Kas"
+                ) {
+                    selectedMenu = "Kas"
+
+                    Toast.makeText(
+                        context,
+                        "Menu Kas Digital",
+                        Toast.LENGTH_SHORT
+                    ).show()
+                }
+
+                // TOMBOL QRIS TENGAH
+                Box(
+                    modifier = Modifier
+                        .weight(1f)
+                        .offset(y = (-12).dp),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Surface(
+                        modifier = Modifier
+                            .size(62.dp)
+                            .clickable {
+                                Toast.makeText(
+                                    context,
+                                    "Menu QRIS PSJ",
+                                    Toast.LENGTH_SHORT
+                                ).show()
+                            },
+                        shape = CircleShape,
+                        color = PSJBlue,
+                        shadowElevation = 8.dp
+                    ) {
+                        Box(
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Column(
+                                horizontalAlignment = Alignment.CenterHorizontally
+                            ) {
+                                Text(
+                                    "▦",
+                                    color = Color.White,
+                                    fontSize = 27.sp
+                                )
+
+                                Text(
+                                    "QRIS",
+                                    color = Color.White,
+                                    fontSize = 9.sp,
+                                    fontWeight = FontWeight.Bold
+                                )
+                            }
+                        }
+                    }
+                }
+
+                DashboardNavItem(
+                    "Absensi",
+                    "✓",
+                    selectedMenu == "Absensi"
+                ) {
+                    selectedMenu = "Absensi"
+
+                    Toast.makeText(
+                        context,
+                        "Menu Absensi Digital",
+                        Toast.LENGTH_SHORT
+                    ).show()
+                }
+
+                DashboardNavItem(
+                    "Profil",
+                    "👤",
+                    selectedMenu == "Profil"
+                ) {
+                    selectedMenu = "Profil"
+
+                    Toast.makeText(
+                        context,
+                        "Menu Profil PSJ",
+                        Toast.LENGTH_SHORT
+                    ).show()
+                }
             }
         }
     }
+}
+
+// ======================================================
+// FUNGSI MEMBUKA MENU DRAWER
+// ======================================================
+
+private fun openDrawerMenu(
+    menu: String,
+    scope: kotlinx.coroutines.CoroutineScope,
+    drawerState: DrawerState,
+    context: android.content.Context
+) {
+    scope.launch {
+        drawerState.close()
+
+        Toast.makeText(
+            context,
+            "Menu $menu akan dikembangkan pada tahap berikutnya.",
+            Toast.LENGTH_SHORT
+        ).show()
+    }
+}
+
+// ======================================================
+// JUDUL KELOMPOK MENU DRAWER
+// ======================================================
+
+@Composable
+fun DrawerSectionTitle(title: String) {
+    Text(
+        title,
+        color = PSJBlue,
+        fontSize = 11.sp,
+        fontWeight = FontWeight.ExtraBold,
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(
+                start = 20.dp,
+                end = 16.dp,
+                top = 13.dp,
+                bottom = 6.dp
+            )
+    )
+}
+
+// ======================================================
+// ITEM MENU DRAWER
+// ======================================================
+
+@Composable
+fun DrawerMenuItem(
+    icon: String,
+    title: String,
+    selected: Boolean = false,
+    iconColor: Color = PSJBlue,
+    textColor: Color = PSJDark,
+    onClick: () -> Unit
+) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 10.dp, vertical = 2.dp)
+            .background(
+                color = if (selected) {
+                    PSJLightBlue
+                } else {
+                    Color.Transparent
+                },
+                shape = RoundedCornerShape(10.dp)
+            )
+            .clickable {
+                onClick()
+            }
+            .padding(
+                horizontal = 12.dp,
+                vertical = 11.dp
+            ),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Text(
+            icon,
+            color = iconColor,
+            fontSize = 19.sp,
+            modifier = Modifier.width(34.dp)
+        )
+
+        Text(
+            title,
+            color = textColor,
+            fontSize = 13.sp,
+            fontWeight = if (selected) {
+                FontWeight.Bold
+            } else {
+                FontWeight.Medium
+            }
+        )
+    }
+}
+
+// ======================================================
+// GARIS PEMBATAS DRAWER
+// ======================================================
+
+@Composable
+fun DrawerDivider() {
+    HorizontalDivider(
+        modifier = Modifier.padding(
+            horizontal = 18.dp,
+            vertical = 7.dp
+        ),
+        color = Color(0xFFE6ECF2),
+        thickness = 1.dp
+    )
 }
 
 // ======================================================
